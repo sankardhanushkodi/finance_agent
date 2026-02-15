@@ -1,5 +1,4 @@
 ---
-<<<<<<< HEAD
 title: Finance Multi-Agent System
 emoji: 📈
 colorFrom: blue
@@ -113,16 +112,3 @@ docker run -p 7860:7860 \
 ## Disclaimer
 
 This system is for **educational and informational purposes only**. Nothing constitutes personalised financial, investment, or tax advice. Consult a licensed professional before making financial decisions.
-=======
-title: Finance Agent
-emoji: 🐨
-colorFrom: purple
-colorTo: blue
-sdk: docker
-pinned: false
-license: apache-2.0
-short_description: Langraph based multi-agent to answer finance questions
----
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
->>>>>>> hf/main
