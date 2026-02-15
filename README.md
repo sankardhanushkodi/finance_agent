@@ -1,3 +1,13 @@
+---
+title: Finance Multi-Agent System
+emoji: 📈
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # Finance Multi-Agent System
 
 A multi-agent system built with **LangGraph** that answers finance questions and analyses portfolios. Four specialist agents collaborate under a Supervisor orchestrator.
@@ -68,6 +78,36 @@ python test_graph.py
 - *"Analyse my portfolio — am I over-concentrated?"*
 - *"If I sell my NVDA (bought at $400, 50 shares, held 18 months), what's my tax?"*
 - *"Find tax-loss harvesting opportunities in my portfolio."*
+
+## Deploy to Hugging Face Spaces
+
+The project ships with a `Dockerfile` targeting HF Spaces (Docker SDK).
+
+1. Create a new Space → **Docker** SDK at huggingface.co/new-space
+2. Push the repo:
+   ```bash
+   git remote add hf https://huggingface.co/spaces/<your-username>/<space-name>
+   git push hf main
+   ```
+3. Add your API key under **Settings → Repository Secrets**:
+   | Secret name | Value |
+   |---|---|
+   | `ANTHROPIC_API_KEY` | `sk-ant-...` |
+   | `LLM_PROVIDER` | `anthropic` |
+   | `LLM_MODEL` | `claude-haiku-4-5-20251001` |
+
+HF Spaces will build the image automatically and expose the app on port 7860.
+
+## Local Docker build
+
+```bash
+docker build -t finance-agent .
+docker run -p 7860:7860 \
+    -e ANTHROPIC_API_KEY=sk-ant-... \
+    -e LLM_PROVIDER=anthropic \
+    finance-agent
+# → open http://localhost:7860
+```
 
 ## Disclaimer
 
