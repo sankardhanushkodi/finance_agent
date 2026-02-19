@@ -1,0 +1,36 @@
+# Secrets – never bake into image
+.env
+.env.*
+
+# Virtual environment – dependencies are installed fresh inside the image
+.venv/
+venv/
+env/
+
+# Git history
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# macOS metadata
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Local yfinance / SQLite cache
+*.db
+*.sqlite
+
+# Local test artifacts
+*.log
+*.tmp
+
+# Dev scripts not needed in the image
+setup.sh
+test_graph.py

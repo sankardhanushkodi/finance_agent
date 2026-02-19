@@ -30,10 +30,13 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from agents import (
+    create_goal_agent,
     create_market_agent,
+    create_news_agent,
     create_portfolio_agent,
     create_stock_agent,
     create_tax_agent,
+    create_tax_education_agent,
 )
 from graph.state import AgentState
 
@@ -81,11 +84,14 @@ def _format_history(history: list, max_turns: int = 6) -> str:
 
 SUPERVISOR_SYSTEM = """You are the orchestrator of a finance multi-agent system.
 
-You have four specialist agents available:
-- **stock_agent**     – individual stock prices, history, fundamentals, analyst ratings
-- **portfolio_agent** – portfolio composition, performance vs benchmark, risk analysis
-- **market_agent**    – market overview, sector rotation, macro trends, VIX, yields
-- **tax_agent**       – capital gains calculation, tax-loss harvesting, wash-sale rules
+You have seven specialist agents available:
+- **stock_agent**          – individual stock prices, history, fundamentals, analyst ratings
+- **portfolio_agent**      – portfolio composition, performance vs benchmark, risk analysis
+- **market_agent**         – market overview, sector rotation, macro trends, VIX, yields
+- **tax_agent**            – capital gains calculation, tax-loss harvesting, wash-sale rules
+- **goal_agent**           – financial goal setting, savings plans, retirement numbers, growth projections, asset allocation
+- **tax_education_agent**  – US tax concepts, account types (401k/IRA/HSA/529), Roth vs Traditional comparison, tax brackets, contribution limits, effective vs marginal rates
+- **news_agent**           – fetch, summarize, and contextualize financial news for stocks, sectors, or the broad market; identify themes and market impact
 
 Your job:
 1. Read the current user question AND the conversation history to understand context.
@@ -99,13 +105,20 @@ Routing rules:
 - For questions about a portfolio (holdings provided) → portfolio_agent
 - For questions about the overall market, sectors, or macro → market_agent
 - For questions about taxes, capital gains, or tax-loss harvesting → tax_agent
+- For questions about financial goals, savings plans, retirement planning, college savings,
+  emergency funds, how much to save, time to reach a goal, or asset allocation → goal_agent
+- For questions about tax concepts, account types (401k, IRA, Roth IRA, HSA, 529, FSA,
+  SEP-IRA), Roth vs Traditional, contribution limits, tax brackets, marginal vs effective
+  rate, standard deduction, or general "how does X tax thing work" education → tax_education_agent
+- For questions about financial news, headlines, what's in the news about a stock or sector,
+  what is driving the market today, news summary, trending stories, or recent events → news_agent
 - For complex questions spanning multiple domains, call agents in sequence
 - For pure follow-up questions that need no new data (e.g. "explain that more") → FINISH
 
 Always respond with just the agent name or 'FINISH'."""
 
 
-AGENT_NAMES = ["stock_agent", "portfolio_agent", "market_agent", "tax_agent"]
+AGENT_NAMES = ["stock_agent", "portfolio_agent", "market_agent", "tax_agent", "goal_agent", "tax_education_agent", "news_agent"]
 
 
 def make_supervisor_node(llm):
@@ -251,6 +264,9 @@ def build_graph():
     portfolio = create_portfolio_agent(llm)
     market = create_market_agent(llm)
     tax = create_tax_agent(llm)
+    goal = create_goal_agent(llm)
+    tax_edu = create_tax_education_agent(llm)
+    news = create_news_agent(llm)
 
     workflow = StateGraph(AgentState)
 
@@ -260,6 +276,9 @@ def build_graph():
     workflow.add_node("portfolio_agent", make_agent_node(portfolio, "portfolio_agent"))
     workflow.add_node("market_agent", make_agent_node(market, "market_agent"))
     workflow.add_node("tax_agent", make_agent_node(tax, "tax_agent"))
+    workflow.add_node("goal_agent", make_agent_node(goal, "goal_agent"))
+    workflow.add_node("tax_education_agent", make_agent_node(tax_edu, "tax_education_agent"))
+    workflow.add_node("news_agent", make_agent_node(news, "news_agent"))
 
     workflow.add_edge(START, "supervisor")
 
@@ -275,6 +294,9 @@ def build_graph():
             "portfolio_agent": "portfolio_agent",
             "market_agent": "market_agent",
             "tax_agent": "tax_agent",
+            "goal_agent": "goal_agent",
+            "tax_education_agent": "tax_education_agent",
+            "news_agent": "news_agent",
             "synthesiser": "synthesiser",
         },
     )
